@@ -99,6 +99,7 @@ video_error_or_removed VARCHAR(500),
 description VARCHAR(500),
 file_name VARCHAR(500)
 );
+```
 
 I created a table `raw_videos_archive` with necessary columns from dataset in data with a column for file_name in order to keep track of the source file. This file stores all the necessary data persistently.
 
@@ -180,7 +181,8 @@ extract_raw_videos_data_query = '../sql/queries/extract_raw_videos_data_query.sq
 extract_raw_videos_archive_data_query = '../sql/queries/extract_raw_videos_archive_data_query.sql'
 
 extract_category_data_from_raw_query = '../sql/queries/extract_category_data_from_raw_query.sql'
-extract_video_data_from_raw_query = '../sql/queries/extract_video_data_from_raw_query.sql'```
+extract_video_data_from_raw_query = '../sql/queries/extract_video_data_from_raw_query.sql'
+```
 
 
 ## 4. `sql.py` file in src/pipeline/.
