@@ -1,0 +1,22 @@
+CREATE TABLE videos(
+video_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+client_video_id VARCHAR(500),
+trending_date DATE,
+title VARCHAR(15000),
+channel_title VARCHAR(15000),
+category_id VARCHAR(500),
+publish_time TIMESTAMP,
+tags VARCHAR(15000),
+views INT,
+likes INT,
+dislikes INT,
+comment_count INT,
+thumbnail_link VARCHAR(15000),
+comments_disabled BOOLEAN,
+ratings_disabled BOOLEAN,
+video_error_or_removed BOOLEAN,
+description VARCHAR(15000),
+country VARCHAR(500),
+diff_publish_trend INT,
+ratio_like_dislike FLOAT
+);
