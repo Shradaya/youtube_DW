@@ -52,8 +52,9 @@ def main():
     extract_category_data('../../data/US_category_id.json', 'United States', con, cur)
     
     extract_category_data_table(con, cur)
+
+    load_dim_category_data_table(con, cur)
     con.close()
-    
 ```    
 
 ## 3. `extract_category_data` function
@@ -139,7 +140,36 @@ def extract_category_data_table(con, cur):
     con.commit()
 ```
 
-## 5. Program executor
+## 5. `load_dim_category_data_table` function
+
+This function is used to insert data into the dim_category from the standard category table.
+
+* Function Definition
+```
+def load_dim_category_data_table(con, cur):
+    ....
+```
+
+* Deleting file that exists before insertion
+```    
+    delete_sql = "DELETE FROM dim_category;"
+    cur.execute(delete_sql)
+    con.commit()
+```
+
+* Loading the sql query to insert data into the dim_category table 
+```
+    sql_query = sql.query(query.load_dim_category_query)
+```
+
+* Executing query and commiting the changes
+```
+    cur.execute(sql_query)
+    con.commit()
+```
+
+
+## 6. Program executor
 
 When the program is executed this statement directs the execution to the main function.
 

@@ -1,0 +1,4 @@
+CREATE TABLE dim_channel(
+channel_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+channel_name VARCHAR(500)
+);

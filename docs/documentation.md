@@ -148,8 +148,111 @@ I have created a table called videos to import the necessary data and provide th
 I have added few additional colums for numercal values like diff_publish_first_trend to calculate difference between the publish and trending date; and the ratio_like_dislike to calculate the review of the viewers.
 
 
+* `schema/create_dim_category_table.sql` file:
+```
+CREATE TABLE dim_category(
+category_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+yt_category_id VARCHAR(500),
+category VARCHAR(500),
+assignable BOOLEAN
+);
+```
+
+It is the first dimension table that I have created. This table holds the different category of video that were on the trending list.
+
+* `schema/create_dim_channel_table.sql` file:
+```
+CREATE TABLE dim_channel(
+channel_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+channel_name VARCHAR(500)
+);
+```
+This is a dimension table which holds the distinct channels that are available in the youtube trending.
+
+* `schema/create_dim_country_table.sql` file:
+```
+CREATE TABLE dim_country(
+country_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+country_name VARCHAR(50)
+);
+```
+For this project we have 10 different countries. This table is used to store the name of the different countries.
+
+* `schema/create_dim_publish_date_table.sql` file:
+```
+CREATE TABLE dim_publish_date(
+date_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+full_date DATE,
+week_of_the_year INT,
+quarter INT,
+year INT,
+month INT,
+date INT,
+day_of_the_week VARCHAR(15)
+);
+```
+It is the dimension table used to categorize the published date.
+
+* `schema/create_dim_trending_date_table.sql` file:
+```
+CREATE TABLE dim_trending_date(
+date_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+full_date DATE,
+week_of_the_year INT,
+quarter INT,
+year INT,
+month INT,
+date INT,
+day_of_the_week VARCHAR(15)
+);
+```
+It is the dimension table used to categorize the trending date.
+
+
+* `schema/create_dim_videos_table.sql` file:
+```
+CREATE TABLE dim_videos(
+video_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+yt_video_id VARCHAR(500),
+category_id INT,
+channel_id INT,
+date_id INT,
+video_title VARCHAR(1000),
+publish_time TIMESTAMP,
+ratings_disabled BOOLEAN,
+cmt_disabled BOOLEAN,
+video_error_or_removed BOOLEAN,
+CONSTRAINT fk_dv_category_id FOREIGN KEY (category_id) REFERENCES dim_category(category_id),
+CONSTRAINT fk_dv_channel_id FOREIGN KEY (channel_id) REFERENCES dim_channel(channel_id),
+CONSTRAINT fk_dv_date_id FOREIGN KEY (date_id) REFERENCES dim_publish_date(date_id)
+);
+```
+This table is used to store the informations regarding the video. 
+
+* `schema/create_fact_trend_video_table.sql` file:
+```
+CREATE TABLE fact_video_trend(
+video_trend_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+video_id INT,
+country_id INT,
+date_id INT,
+trending_date DATE,
+views INT,
+likes INT,
+dislike INT,
+cmt_count INT,
+ratio_likes_dislikes FLOAT,
+diff_publish_trend INT,
+CONSTRAINT fk_fvt_video_id FOREIGN KEY (video_id) REFERENCES dim_videos(video_id),
+CONSTRAINT fk_fvt_country_id FOREIGN KEY (country_id) REFERENCES dim_country(country_id),
+CONSTRAINT fk_fvt_date_id FOREIGN KEY (date_id) REFERENCES dim_trending_date(date_id)
+);
+```
+This table is used to store the information of the videos with regards to the different trending date. The values from this table can be used for analysis
+
+
 ## 2. `connectdb.py` file in  src/pipeline/.
-We connect to Postgresql database regularly in each script through `psycopg2` so it made sense to create a separate file for the repeating function. I have used environment variables to get around revealing secret informations.
+We connect to Postgresql database regularly in each script through `psycopg2` so it made sense to create a separate file for the repeating function. I have used environment variables to get around revealing srcret informations.
 
 * `connectdb.py` file:
 ```
@@ -182,6 +285,14 @@ extract_raw_videos_archive_data_query = '../sql/queries/extract_raw_videos_archi
 
 extract_category_data_from_raw_query = '../sql/queries/extract_category_data_from_raw_query.sql'
 extract_video_data_from_raw_query = '../sql/queries/extract_video_data_from_raw_query.sql'
+
+load_dim_category_query = '../sql/queries/load_dim_category_query.sql'
+load_dim_channel_query = '../sql/queries/load_dim_channel_query.sql'
+load_dim_country_query = '../sql/queries/load_dim_country_query.sql'
+load_dim_publish_date_query = '../sql/queries/load_dim_publish_date_query.sql'
+load_dim_trending_date_query = '../sql/queries/load_dim_trending_date_query.sql'
+load_dim_videos_query = '../sql/queries/load_dim_videos_query.sql'
+load_fact_video_trend_query = '../sql/queries/load_fact_video_trend_query.sql'
 ```
 
 
@@ -189,7 +300,6 @@ extract_video_data_from_raw_query = '../sql/queries/extract_video_data_from_raw_
 In this project we are reading queries multiple times from sql files so a separate function to read the file has been defined in this file.
 
 * `sql.py` file:
-
 ```
 def query(filepath):
     with open(filepath, 'r') as file:
@@ -199,14 +309,13 @@ def query(filepath):
 
 ## 5. `.env` file in src/pipeline/.
 
-This file is used to define the environment variables which are to be kept a secret. This file is included in gitignore.
+This file is used to define the environment variables which are to be kept a srcret. This file is included in gitignore.
 
-## 6. `extract_raw_category_data_query.sql` file in sec/sql/queries/.
+## 6. `extract_raw_category_data_query.sql` file in src/sql/queries/.
 
 It is a DML query to insert data into the raw_category table
 
 * `extract_raw_category_data_query.sql` file:
-
 ```
 INSERT INTO raw_category
 (kind, etag, category_id, channel_id, category, assignable, country)
@@ -214,12 +323,11 @@ VALUES (%s, %s, %s, %s, %s, %s, %s);
 
 ```
 
-## 7. `extract_raw_videos_data_query.sql` file in sec/sql/queries/.
+## 7. `extract_raw_videos_data_query.sql` file in src/sql/queries/.
 
 It is a DML query to insert data into the raw_videos table
 
 * `extract_raw_videos_data_query.sql` file:
-
 ```
 INSERT INTO raw_videos(
 video_id,
@@ -243,12 +351,11 @@ country
 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
 ```
 
-## 8. `extract_raw_category_archive_data_query.sql` file in sec/sql/queries/.
-
-
-* `extract_raw_category_archive_data_query.sql` file:
+## 8. `extract_raw_category_archive_data_query.sql` file in src/sql/queries/.
 
 It is a DML query to insert data into the raw_product table
+
+* `extract_raw_category_archive_data_query.sql` file:
 ```
 INSERT INTO raw_category_archive
 (kind, etag, category_id, channel_id, category, assignable, file_name)
@@ -258,9 +365,9 @@ VALUES (%s, %s, %s, %s, %s, %s, %s);
 
 ## 9. `extract_raw_videos_archive_data_query.sql` file in src/sql/queries/.
 
-* `extract_raw_videos_archive_data_query.sql` file:
+It is a DML query to insert data into the raw_videos_archive table.
 
-It is a DML query to insert data into the raw_videos_archive table
+* `extract_raw_videos_archive_data_query.sql` file:
 ```
 INSERT INTO raw_videos_archive(
 video_id,
@@ -286,10 +393,9 @@ VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
 
 ## 10. `extract_category_data_from_raw_query.sql` file in src/sql/queries
 
-* `extract_category_data_from_raw_query.sql` file:
-
 It is a DML query to insert data into the category table from the raw datas stored in the raw_category table. Here the category_unique constraint is used to identify only the unqiue category regarding the id, category and assignable.
 
+* `extract_category_data_from_raw_query.sql` file:
 ```
 INSERT INTO category(client_category_id, category, assignable)
 SELECT 
@@ -303,13 +409,14 @@ ON CONFLICT ON CONSTRAINT category_unique DO NOTHING;
 
 ## 11. `extract_video_data_from_raw_query.sql` file in src/sql/queries
 
-* `extract_video_data_from_raw_query.sql` file:
-
 It is a DML query to insert data into the video table from the raw datas stored in the raw tables.
+Here, we have cast the data variables on to the variables as per need, while also adding two fields, diff_publish_trend and ratio_like_dislike. The trending date's format has also been converted to a viable one.
+
+* `extract_video_data_from_raw_query.sql` file:
 ```
 INSERT INTO videos(client_video_id, trending_date, title, channel_title, category_id, publish_time, tags, views, likes, dislikes,
 comment_count, thumbnail_link, comments_disabled, ratings_disabled, video_error_or_removed, description, country, 
-diff_publish_first_trend, ratio_like_dislike)
+diff_publish_trend, ratio_like_dislike)
 SELECT 
 video_id, 
 TO_DATE(trending_date, 'YY.DD.MM') AS trending_date, 
@@ -332,4 +439,144 @@ TO_DATE(trending_date, 'YY.DD.MM')- publish_time::TIMESTAMP::DATE,
 CASE WHEN dislikes <> '0' THEN CAST(likes AS INT)/CAST(dislikes AS INT) 
 ELSE CAST(likes AS INT) END AS ratio_like_dislike
 FROM raw_videos; 
+```
+
+## 12. `load_dim_category_query.sql` file in src/sql/queries
+
+It is a DML query to insert data into the dim_category table from the cateogory table formed from the transformation of data from the raw_category table.
+
+* `load_dim_category_query.sql` file:
+```
+INSERT INTO dim_category (yt_category_id, category, assignable)
+SELECT client_category_id, category, assignable FROM category;
+```
+
+## 13. `load_dim_channel_query.sql` file in src/sql/queries
+
+It is a DML query to insert data into the dim_channel table.
+
+* `load_dim_channel_query.sql` file:
+```
+INSERT INTO dim_channel(channel_name)
+SELECT DISTINCT channel_title FROM videos;
+```
+
+
+## 14. `load_dim_country_query.sql` file in src/sql/queries
+
+It is a DML query to insert data into the dim_country table.
+
+* `load_dim_country_query.sql` file:
+```
+INSERT INTO dim_country(country_name)
+SELECT DISTINCT country FROM videos;
+```
+
+## 15. `load_dim_publish_date_query.sql` file in src/sql/queries
+
+It is a DML query to insert data into the dim_publish_date table.
+
+* `load_dim_publish_date_query.sql` file:
+```
+INSERT INTO dim_publish_date (full_date, week_of_the_year, quarter, year, month, date, day_of_the_week)
+SELECT t.date,  
+DATE_PART('week',t.date) AS week_of_the_year, 
+EXTRACT(QUARTER FROM t.date) AS quarter,
+EXTRACT(YEAR FROM t.date) AS year,
+EXTRACT(MONTH FROM t.date) AS month,
+EXTRACT(DAY FROM t.date) AS date,
+CASE WHEN EXTRACT(DOW FROM t.date) = 0 THEN 'Sunday'
+WHEN EXTRACT(DOW FROM t.date) = 1 THEN 'Monday'
+WHEN EXTRACT(DOW FROM t.date) = 2 THEN 'Tuesday'
+WHEN EXTRACT(DOW FROM t.date) = 3 THEN 'Wednesday'
+WHEN EXTRACT(DOW FROM t.date) = 4 THEN 'Thursday'
+WHEN EXTRACT(DOW FROM t.date) = 5 THEN 'Friday'
+WHEN EXTRACT(DOW FROM t.date) = 6 THEN 'Saturday' END
+AS day_of_the_week
+FROM (SELECT DISTINCT publish_time::DATE AS date FROM videos) t;
+```
+
+
+## 16. `load_dim_trending_date_query.sql` file in src/sql/queries
+
+It is a DML query to insert data into the dim_trending_date table.
+
+* `load_dim_trending_date_query.sql` file:
+```
+INSERT INTO dim_trending_date (full_date, week_of_the_year, quarter, year, month, date, day_of_the_week)
+SELECT t.date,  
+DATE_PART('week',t.date) AS week_of_the_year, 
+EXTRACT(QUARTER FROM t.date) AS quarter,
+EXTRACT(YEAR FROM t.date) AS year,
+EXTRACT(MONTH FROM t.date) AS month,
+EXTRACT(DAY FROM t.date) AS date,
+CASE WHEN EXTRACT(DOW FROM t.date) = 0 THEN 'Sunday'
+WHEN EXTRACT(DOW FROM t.date) = 1 THEN 'Monday'
+WHEN EXTRACT(DOW FROM t.date) = 2 THEN 'Tuesday'
+WHEN EXTRACT(DOW FROM t.date) = 3 THEN 'Wednesday'
+WHEN EXTRACT(DOW FROM t.date) = 4 THEN 'Thursday'
+WHEN EXTRACT(DOW FROM t.date) = 5 THEN 'Friday'
+WHEN EXTRACT(DOW FROM t.date) = 6 THEN 'Saturday' END
+AS day_of_the_week
+FROM (SELECT DISTINCT trending_date AS date FROM videos) t;
+```
+
+
+## 17. `load_dim_videos_query.sql` file in src/sql/queries
+
+It is a DML query to insert data into the dim_videos table.
+
+* `load_dim_videos_query.sql` file:
+```
+INSERT INTO dim_videos
+(yt_video_id, category_id, channel_id, date_id, video_title, publish_time,
+ratings_disabled, cmt_disabled, video_error_or_removed)
+SELECT 
+v.client_video_id, 
+dc.category_id,
+dch.channel_id,
+dd.date_id,
+v.title,
+v.publish_time,
+v.ratings_disabled,
+v.comments_disabled,
+v.video_error_or_removed
+FROM videos v 
+JOIN dim_category dc ON v.category_id = dc.yt_category_id
+JOIN dim_channel dch ON v.channel_title = dch.channel_name
+JOIN dim_publish_date dd ON v.publish_time::date = dd.full_date
+WHERE v.video_id IN
+(SELECT MAX(video_id) 
+FROM videos 
+GROUP BY client_video_id)
+```
+
+## 17. `load_fact_video_trend_query.sql` file in src/sql/queries
+
+It is a DML query to insert data into the fact_video_trend table.
+
+* `load_fact_video_trend_query.sql` file:
+
+```
+INSERT INTO dim_videos
+(yt_video_id, category_id, channel_id, date_id, video_title, publish_time,
+ratings_disabled, cmt_disabled, video_error_or_removed)
+SELECT 
+v.client_video_id, 
+dc.category_id,
+dch.channel_id,
+dd.date_id,
+v.title,
+v.publish_time,
+v.ratings_disabled,
+v.comments_disabled,
+v.video_error_or_removed
+FROM videos v 
+JOIN dim_category dc ON v.category_id = dc.yt_category_id
+JOIN dim_channel dch ON v.channel_title = dch.channel_name
+JOIN dim_publish_date dd ON v.publish_time::date = dd.full_date
+WHERE v.video_id IN
+(SELECT MAX(video_id) 
+FROM videos 
+GROUP BY client_video_id)
 ```

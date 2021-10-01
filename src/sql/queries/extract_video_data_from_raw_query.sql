@@ -1,6 +1,6 @@
 INSERT INTO videos(client_video_id, trending_date, title, channel_title, category_id, publish_time, tags, views, likes, dislikes,
 comment_count, thumbnail_link, comments_disabled, ratings_disabled, video_error_or_removed, description, country, 
-diff_publish_first_trend, ratio_like_dislike)
+diff_publish_trend, ratio_like_dislike)
 SELECT 
 video_id, 
 TO_DATE(trending_date, 'YY.DD.MM') AS trending_date, 
@@ -22,4 +22,4 @@ country,
 TO_DATE(trending_date, 'YY.DD.MM')- publish_time::TIMESTAMP::DATE,
 CASE WHEN dislikes <> '0' THEN CAST(likes AS INT)/CAST(dislikes AS INT) 
 ELSE CAST(likes AS INT) END AS ratio_like_dislike
-FROM raw_videos; 
+FROM raw_videos WHERE video_id <> '#NAME?'; 

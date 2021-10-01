@@ -42,6 +42,14 @@ def extract_category_data_table(con, cur):
     cur.execute(sql_query)
     con.commit()
 
+def load_dim_category_data_table(con, cur):
+    delete_sql = "DELETE FROM dim_category;"
+    cur.execute(delete_sql)
+    con.commit()
+
+    sql_query = sql.query(query.load_dim_category_query)
+    cur.execute(sql_query)
+    con.commit()
 
 def main():
     con = connectdb.connect(psycopg2)
@@ -64,6 +72,8 @@ def main():
     extract_category_data('../../data/US_category_id.json', 'United States', con, cur)
     
     extract_category_data_table(con, cur)
+
+    load_dim_category_data_table(con, cur)
     con.close()
 
 if __name__ == '__main__':

@@ -6,14 +6,14 @@ The following is the logical modeling of the data warehouse for the youtube tren
 
 The following business requirements were identified:
 
-* We should be able to know the following:
-* Which video stayed on the trending list for multiple days in a row.
+We should be able to know the following:
 * Which youtuber/channel has been consistently providing trending videos.
 * Which category of video has been most liked in different countries.
 * Which country has the highest number of viewers.
 * Audience involvement with the youtuber.
 * If there are any trending videos which have been removed.
 * Time that a video took to arrive in the trending list after upload.
+* Video which has been trending in multiple countries
 
 Possible Requirement
 * Date of trending/ period of trending
@@ -49,7 +49,7 @@ The attributes identified for the fact and dimension tables are:
 <table>
 <tr>
 <th>`dim_video` </th> 
-<td>video_id, category_id, channel_id, date_id, publish_time, tags, description, thumbnail_link, cmt_disabled, video_error_or_removal</td>
+<td>video_id, category_id, channel_id, date_id, video_title, publish_time, cmt_disabled, video_error_or_removal</td>
 </tr>
 <tr>
 <th> `dim_channel` </th>
@@ -61,15 +61,20 @@ The attributes identified for the fact and dimension tables are:
 </tr>
 <tr>
 <th>`dim_date` </th>
-<td>date_id, date, week, month, quater</td>
+<td>date_id, full_date, week_of_the_year, quater, day_of_the_week
+</td>
 </tr>
 <tr>
 <th>`dim_country` </th>
-<td>video_trend_id, video_id, country_id, date_id, trending_date, views, likes, dislikes<br>cmt_count, ratio_likes_dislikes, diff_publish_trend</td>
+<td>country_id, country_name</td>
+</tr>
+<tr>
+<th>`fact_video_trend` </th>
+<td>video_trend_id, video_id, country_id, date_id, trending_date, views, likes, dislikes, <br> cmt_count, ratio_like_dislike, diff_publish_trend</td>
 </tr>
 </table>
 
 ## 4.Logical model
 
 
-![alt text](logical_model.png)
+![alt text](logical_model.jpg)

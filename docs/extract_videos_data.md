@@ -40,7 +40,7 @@ def main():
 * calling function in a sequence. The functions called are defined below. After function call is completed the connection is closed.
 ```    
     extract_videos_data('../../data/CAvideos.csv', 'Canada', con, cur)
-    extract_videos_data('../../data/DEvideos.csv', 'Denmark', con, cur)
+    extract_videos_data('../../data/DEvideos.csv', 'Germany', con, cur)
     extract_videos_data('../../data/FRvideos.csv', 'France', con, cur)
     extract_videos_data('../../data/GBvideos.csv', 'Great Britian', con, cur)
     extract_videos_data('../../data/INvideos.csv', 'India', con, cur)
@@ -49,8 +49,16 @@ def main():
     extract_videos_data('../../data/MXvideos.csv', 'Mexico', con, cur)
     extract_videos_data('../../data/RUvideos.csv', 'Russia', con, cur)
     extract_videos_data('../../data/USvideos.csv', 'United States', con, cur)
-
+    extract_videos_data('../../data/korea.csv', 'Korea', con, cur)
+    
     extract_video_data_table(con, cur)
+    
+    load_dim_channel_data_table(con, cur)
+    load_dim_country_data_table(con, cur)
+    load_dim_publish_date_data_table(con, cur)
+    load_dim_trending_date_data_table(con, cur)
+    load_dim_videos_data_table(con, cur)
+    load_fact_video_trend_data_table(con, cur)
     con.close()
 ```    
 
@@ -138,7 +146,175 @@ def extract_video_data_table(con, cur):
     con.commit()
 ```
 
-## 5. Program executor
+## 5. `load_dim_channel_data_table` function
+
+This function is used to insert data into the dim_channel table.
+
+* Function Definition
+```
+def load_dim_channel_data_table(con, cur):
+    ....
+```
+
+* Deleting file that exists before insertion
+```    
+    delete_sql = "DELETE FROM dim_channel;"
+    cur.execute(delete_sql)
+    con.commit()
+```
+
+* Loading the sql query to insert data into the dim_channel table 
+```
+    sql_query = sql.query(query.load_dim_channel_query)
+```
+
+* Executing query and commiting the changes
+```
+    cur.execute(sql_query)
+    con.commit()
+```
+
+
+## 6. `load_dim_country_data_table` function
+
+This function is used to insert data into the dim_country table.
+
+* Function Definition
+```
+def load_dim_country_data_table(con, cur):
+    ....
+```
+
+* Deleting file that exists before insertion
+```    
+    delete_sql = "DELETE FROM dim_country;"
+    cur.execute(delete_sql)
+    con.commit()
+```
+
+* Loading the sql query to insert data into the dim_country table 
+```
+    sql_query = sql.query(query.load_dim_country_query)
+```
+
+* Executing query and commiting the changes
+```
+    cur.execute(sql_query)
+    con.commit()
+```
+
+## 7. `load_dim_publish_date_data_table` function
+
+This function is used to insert data into the dim_publish_date table.
+
+* Function Definition
+```
+def load_dim_publish_date_data_table(con, cur):
+    ....
+```
+
+* Deleting file that exists before insertion
+```    
+    delete_sql = "DELETE FROM dim_publish_date;"
+    cur.execute(delete_sql)
+    con.commit()
+```
+
+* Loading the sql query to insert data into the dim_publish_date table 
+```
+    sql_query = sql.query(query.load_dim_publish_date_query)
+```
+
+* Executing query and commiting the changes
+```
+    cur.execute(sql_query)
+    con.commit()
+```
+## 8. `load_dim_trending_date_data_table` function
+
+This function is used to insert data into the dim_trending_date table.
+
+* Function Definition
+```
+def load_dim_trending_date_data_table(con, cur):
+    ....
+```
+
+* Deleting file that exists before insertion
+```    
+    delete_sql = "DELETE FROM dim_trending_date;"
+    cur.execute(delete_sql)
+    con.commit()
+```
+
+* Loading the sql query to insert data into the dim_trending_date table 
+```
+    sql_query = sql.query(query.load_dim_trending_date_query)
+```
+
+* Executing query and commiting the changes
+```
+    cur.execute(sql_query)
+    con.commit()
+```
+
+## 9. `load_dim_videos_data_table` function
+
+This function is used to insert data into the dim_videos table.
+
+* Function Definition
+```
+def load_dim_videos_data_table(con, cur):
+    ....
+```
+
+* Deleting file that exists before insertion
+```    
+    delete_sql = "DELETE FROM dim_videos;"
+    cur.execute(delete_sql)
+    con.commit()
+```
+
+* Loading the sql query to insert data into the dim_videos table 
+```
+    sql_query = sql.query(query.load_dim_videos_query)
+```
+
+* Executing query and commiting the changes
+```
+    cur.execute(sql_query)
+    con.commit()
+```
+
+## 10. `load_fact_video_trend_data_table` function
+
+This function is used to insert data into the fact_video_trend table.
+
+* Function Definition
+```
+def load_fact_video_trend_data_table(con, cur):
+    ....
+```
+
+* Deleting file that exists before insertion
+```    
+    delete_sql = "DELETE FROM fact_video_trend;"
+    cur.execute(delete_sql)
+    con.commit()
+```
+
+* Loading the sql query to insert data into the fact_video_trend table 
+```
+    sql_query = sql.query(query.load_fact_video_trend_query)
+```
+
+* Executing query and commiting the changes
+```
+    cur.execute(sql_query)
+    con.commit()
+```
+
+## 11. Program executor
 
 When the program is executed this statement directs the execution to the main function.
 
