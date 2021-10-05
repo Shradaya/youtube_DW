@@ -91,6 +91,16 @@ def load_dim_trending_date_data_table(con, cur):
     con.commit()
     print("Dimension trending date loading has been completed.")
 
+def load_videos_with_title_change(con, cur):
+    delete_sql = "DELETE FROM video_title_change"
+    cur.execute(delete_sql)
+    con.commit()
+
+    sql_query = sql.query(query.load_videos_with_title_change_query)
+    cur.execute(sql_query)
+    con.commit()
+    print("Dimension videos with title change has been loaded.")
+
 def load_dim_videos_data_table(con, cur):
     delete_sql = "DELETE FROM dim_videos"
     cur.execute(delete_sql)
@@ -100,6 +110,7 @@ def load_dim_videos_data_table(con, cur):
     cur.execute(sql_query)
     con.commit()
     print("Dimension videos loading has been completed.")
+
 
 def load_fact_video_trend_data_table(con, cur):
     delete_sql = "DELETE FROM fact_video_trend;"
@@ -136,6 +147,7 @@ def main():
     load_dim_country_data_table(con, cur)
     load_dim_publish_date_data_table(con, cur)
     load_dim_trending_date_data_table(con, cur)
+    load_videos_with_title_change(con, cur)
     load_dim_videos_data_table(con, cur)
     load_fact_video_trend_data_table(con, cur)
     con.close()

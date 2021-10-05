@@ -14,11 +14,13 @@ We should be able to know the following:
 * If there are any trending videos which have been removed.
 * Time that a video took to arrive in the trending list after upload.
 * Video which has been trending in multiple countries
-
-Possible Requirement
 * Date of trending/ period of trending
-* Ratio of views and likes
+* percentage of likes per views
 * Ratio of likes and dislikes (To know if a video is on trending with good reviews)
+
+Possible Requirements:
+* Know if a video did better after change in title.
+* Identify the trending tag.
 
 ## Data Modeling
 
@@ -34,7 +36,7 @@ The following dimensions were identified:
 * `video` - Provides information regarding publish dates
 * `channel` - Provides information about the channel, channel name.
 * `category` - Provides information regarding the genre of the video.
-* `date` - Provides time period for both publish and trending date.
+* `date` - Provides time period information, is further divided into publish and trending date dimension
 * `country` - Provides information about the country in which the video was Trending.
 
 ## 2. Identified Fact
@@ -49,7 +51,7 @@ The attributes identified for the fact and dimension tables are:
 <table>
 <tr>
 <th>`dim_video` </th> 
-<td>video_id, category_id, channel_id, date_id, video_title, publish_time, cmt_disabled, video_error_or_removal</td>
+<td>video_id, category_id, channel_id, date_id, video_title, publish_time, cmt_disabled, video_error_or_removal, old_title, new_title_effective_date</td>
 </tr>
 <tr>
 <th> `dim_channel` </th>
@@ -77,4 +79,4 @@ The attributes identified for the fact and dimension tables are:
 ## 4.Logical model
 
 
-![alt text](logical_model.jpg)
+![alt text](logical_model.png)

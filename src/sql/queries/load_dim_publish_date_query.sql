@@ -1,4 +1,4 @@
-INSERT INTO dim_publish_date (full_date, week_of_the_year, quarter, day_of_the_week)
+INSERT INTO dim_publish_date (publish_date, week_of_the_year, quarter, day_of_the_week)
 SELECT t.date,  
 DATE_PART('week',t.date) AS week_of_the_year, 
 EXTRACT(QUARTER FROM t.date) AS quarter,

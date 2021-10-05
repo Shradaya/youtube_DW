@@ -286,7 +286,36 @@ def load_dim_videos_data_table(con, cur):
     con.commit()
 ```
 
-## 10. `load_fact_video_trend_data_table` function
+## 10. `load_videos_with_title_change` function
+
+This function is used to insert data into the video_title_change table.
+
+* Function Definition
+```
+def load_videos_with_title_change(con, cur):
+    ....
+```
+
+* Deleting file that exists before insertion
+```    
+    delete_sql = "DELETE FROM video_title_change;"
+    cur.execute(delete_sql)
+    con.commit()
+```
+
+* Loading the sql query to insert data into the video_title_change table 
+```
+    sql_query = sql.query(query.load_videos_with_title_change_query)
+```
+
+* Executing query and commiting the changes
+```
+    cur.execute(sql_query)
+    con.commit()
+```
+
+
+## 11. `load_fact_video_trend_data_table` function
 
 This function is used to insert data into the fact_video_trend table.
 
@@ -314,7 +343,7 @@ def load_fact_video_trend_data_table(con, cur):
     con.commit()
 ```
 
-## 11. Program executor
+## 12. Program executor
 
 When the program is executed this statement directs the execution to the main function.
 

@@ -222,9 +222,16 @@ publish_time TIMESTAMP,
 ratings_disabled BOOLEAN,
 cmt_disabled BOOLEAN,
 video_error_or_removed BOOLEAN,
-CONSTRAINT fk_dv_category_id FOREIGN KEY (category_id) REFERENCES dim_category(category_id),
-CONSTRAINT fk_dv_channel_id FOREIGN KEY (channel_id) REFERENCES dim_channel(channel_id),
-CONSTRAINT fk_dv_date_id FOREIGN KEY (date_id) REFERENCES dim_publish_date(date_id)
+tags VARCHAR(1500),
+old_title VARCHAR(1500) DEFAULT NULL, 
+effective_date DATE DEFAULT NULL,
+CONSTRAINT fk_dv_category_id FOREIGN KEY (category_id) 
+REFERENCES dim_category(category_id) ON DELETE CASCADE,
+CONSTRAINT fk_dv_channel_id FOREIGN KEY (channel_id) 
+REFERENCES dim_channel(channel_id) ON DELETE CASCADE,
+CONSTRAINT fk_dv_date_id FOREIGN KEY (date_id) 
+REFERENCES dim_publish_date(date_id) ON DELETE CASCADE,
+CONSTRAINT unique_yt_video_id UNIQUE(yt_video_id)
 );
 ```
 This table is used to store the informations regarding the video. 
@@ -232,24 +239,47 @@ This table is used to store the informations regarding the video.
 * `schema/create_fact_trend_video_table.sql` file:
 ```
 CREATE TABLE fact_video_trend(
-video_trend_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-video_id INT,
-country_id INT,
-date_id INT,
-trending_date DATE,
-views INT,
-likes INT,
-dislike INT,
-cmt_count INT,
-ratio_likes_dislikes FLOAT,
-diff_publish_trend INT,
-CONSTRAINT fk_fvt_video_id FOREIGN KEY (video_id) REFERENCES dim_videos(video_id),
-CONSTRAINT fk_fvt_country_id FOREIGN KEY (country_id) REFERENCES dim_country(country_id),
-CONSTRAINT fk_fvt_date_id FOREIGN KEY (date_id) REFERENCES dim_trending_date(date_id)
+  video_trend_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  video_id INT,
+  country_id INT,
+  date_id INT,
+  trending_date DATE,
+  views INT,
+  likes INT,
+  dislike INT,
+  cmt_count INT,
+  ratio_likes_dislikes FLOAT,
+  diff_publish_trend INT,
+  CONSTRAINT fk_fvt_video_id FOREIGN KEY (video_id) REFERENCES dim_videos(video_id),
+  CONSTRAINT fk_fvt_country_id FOREIGN KEY (country_id) REFERENCES dim_country(country_id),
+  CONSTRAINT fk_fvt_date_id FOREIGN KEY (date_id) REFERENCES dim_trending_date(date_id)
 );
 ```
-This table is used to store the information of the videos with regards to the different trending date. The values from this table can be used for analysis
+This table is used to store the information of the videos with regards to the different trending date. The values from this table can be used for analysis.
 
+* `schema/create_dim_videos_view.sql` file:
+```
+CREATE VIEW dim_videos_view 
+(yt_video_id, category_id, channel_id, date_id, video_title, publish_time,
+ratings_disabled, cmt_disabled, video_error_or_removed, tags) AS
+SELECT 
+v.client_video_id, 
+dc.category_id,
+dch.channel_id,
+dd.date_id,
+v.title,
+FROM videos v 
+JOIN dim_category dc ON v.category_id = dc.yt_category_id
+JOIN dim_channel dch ON v.channel_title = dch.channel_name
+JOIN dim_publish_date dd ON v.publish_time::date = dd.publish_date
+WHERE v.video_id IN
+(SELECT video_id FROM videos 
+WHERE (client_video_id, trending_date)  IN
+(SELECT client_video_id, MAX(trending_date) FROM
+videos
+GROUP BY client_video_id))
+```
+Here, I have created a view in order to assist in creation of list of videos with title change.
 
 ## 2. `connectdb.py` file in  src/pipeline/.
 We connect to Postgresql database regularly in each script through `psycopg2` so it made sense to create a separate file for the repeating function. I have used environment variables to get around revealing srcret informations.
@@ -293,6 +323,7 @@ load_dim_publish_date_query = '../sql/queries/load_dim_publish_date_query.sql'
 load_dim_trending_date_query = '../sql/queries/load_dim_trending_date_query.sql'
 load_dim_videos_query = '../sql/queries/load_dim_videos_query.sql'
 load_fact_video_trend_query = '../sql/queries/load_fact_video_trend_query.sql'
+load_videos_with_title_change_query = '../sql/queries/load_videos_with_title_change.sql'
 ```
 
 
@@ -530,8 +561,9 @@ It is a DML query to insert data into the dim_videos table.
 ```
 INSERT INTO dim_videos
 (yt_video_id, category_id, channel_id, date_id, video_title, publish_time,
-ratings_disabled, cmt_disabled, video_error_or_removed)
+ratings_disabled, cmt_disabled, video_error_or_removed, tags, old_title, effective_date)
 SELECT 
+DISTINCT
 v.client_video_id, 
 dc.category_id,
 dch.channel_id,
@@ -540,18 +572,52 @@ v.title,
 v.publish_time,
 v.ratings_disabled,
 v.comments_disabled,
-v.video_error_or_removed
+v.video_error_or_removed,
+v.tags,
+vtc.old_title,
+vtc.effective_date
 FROM videos v 
 JOIN dim_category dc ON v.category_id = dc.yt_category_id
 JOIN dim_channel dch ON v.channel_title = dch.channel_name
-JOIN dim_publish_date dd ON v.publish_time::date = dd.full_date
+JOIN dim_publish_date dd ON v.publish_time::date = dd.publish_date
+LEFT JOIN video_title_change vtc ON vtc.new_title = v.title 
 WHERE v.video_id IN
-(SELECT MAX(video_id) 
-FROM videos 
-GROUP BY client_video_id)
+(SELECT video_id FROM videos 
+WHERE (client_video_id, trending_date)  IN
+(SELECT client_video_id, MAX(trending_date) FROM
+videos GROUP BY client_video_id))
+ON CONFLICT ON CONSTRAINT unique_yt_video_id DO NOTHING;
 ```
 
-## 17. `load_fact_video_trend_query.sql` file in src/sql/queries
+## 18. `load_videos_with_title_change.sql` file in src/sql/queries
+
+It is a DML query to load videos with title change.
+
+* `load_videos_with_title_change.sql` file:
+
+```
+INSERT INTO video_title_change (old_title, new_title, effective_date)
+WITH cte as
+(SELECT 
+v.client_video_id, v.title old_title, v1.title new_title, MIN(v1.trending_date) effective_date
+FROM videos v LEFT JOIN videos v1 ON v.client_video_id = v1.client_video_id 
+WHERE 
+v.client_video_id =v1.client_video_id 
+AND
+v.title <> v1.title
+AND 
+v.title <>'Deleted video'
+AND 
+v1.title <>'Deleted video'
+GROUP BY v.client_video_id, v.title, v1.title) 
+SELECT cte.old_title, cte.new_title, cte.effective_date
+FROM cte JOIN dim_videos_view dv ON cte.client_video_id = dv.yt_video_id 
+WHERE (cte.client_video_id, cte.effective_date) IN
+(SELECT client_video_id, MAX(effective_date)
+FROM cte
+GROUP BY client_video_id)
+```
+## 19. `load_fact_video_trend_query.sql` file in src/sql/queries
 
 It is a DML query to insert data into the fact_video_trend table.
 
