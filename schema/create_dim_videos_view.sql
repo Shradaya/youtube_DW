@@ -5,7 +5,7 @@ v.client_video_id,
 dc.category_id,
 dch.channel_id,
 dd.date_id,
-v.title,
+v.title
 FROM videos v 
 JOIN dim_category dc ON v.category_id = dc.yt_category_id
 JOIN dim_channel dch ON v.channel_title = dch.channel_name

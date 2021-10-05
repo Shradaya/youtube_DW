@@ -8,7 +8,6 @@ views INT,
 likes INT,
 dislike INT,
 cmt_count INT,
-ratio_likes_dislikes FLOAT,
 diff_publish_trend INT,
 CONSTRAINT fk_fvt_video_id FOREIGN KEY (video_id) 
 REFERENCES dim_videos(video_id) ON DELETE CASCADE,
