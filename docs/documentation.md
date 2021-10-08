@@ -275,6 +275,17 @@ CREATE VIEW dim_videos_view
 ```
 Here, I have created a view in order to assist in creation of list of videos with title change.
 
+
+* `schema/video_title_change.sql` file:
+
+```
+CREATE TABLE video_title_change(
+  yt_video_id VARCHAR(1000),
+  old_title VARCHAR(1000),
+  new_title VARCHAR(1000),
+  effective_date DATE
+);
+```
 ## 2. `connectdb.py` file in  src/pipeline/.
 We connect to Postgresql database regularly in each script through `psycopg2` so it made sense to create a separate file for the repeating function. I have used environment variables to get around revealing srcret informations.
 

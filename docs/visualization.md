@@ -62,7 +62,7 @@ This is a visualization which provides information of which tag has been most us
 ![alt text](https://github.com/Shradaya/Youtube_DW/blob/master/docs/visualization_images/CountOfTag.png)
 
 
+* Views after and before a title change
+This visualization shows the effect of a title change on a video's views
 
-
-
-
+![alt text](https://github.com/Shradaya/Youtube_DW/blob/master/docs/visualization_images/ViewsBeforeAfterTitleChange.png)

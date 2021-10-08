@@ -9,6 +9,7 @@ likes INT,
 dislike INT,
 cmt_count INT,
 diff_publish_trend INT,
+before_after_flag INT,
 CONSTRAINT fk_fvt_video_id FOREIGN KEY (video_id) 
 REFERENCES dim_videos(video_id) ON DELETE CASCADE,
 CONSTRAINT fk_fvt_country_id FOREIGN KEY (country_id) 

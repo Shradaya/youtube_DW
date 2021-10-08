@@ -19,7 +19,7 @@ FROM videos v
 JOIN dim_category dc ON v.category_id = dc.yt_category_id
 JOIN dim_channel dch ON v.channel_title = dch.channel_name
 JOIN dim_publish_date dd ON v.publish_time::date = dd.publish_date
-LEFT JOIN video_title_change vtc ON vtc.new_title = v.title 
+LEFT JOIN video_title_change vtc ON vtc.new_title = v.title AND vtc.yt_video_id = v.client_video_id
 WHERE v.video_id IN
 (SELECT video_id FROM videos 
 WHERE (client_video_id, trending_date)  IN
