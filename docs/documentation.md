@@ -235,7 +235,6 @@ CREATE TABLE fact_video_trend(
   video_id INT,
   country_id INT,
   date_id INT,
-  trending_date DATE,
   views INT,
   likes INT,
   dislike INT,
@@ -625,25 +624,23 @@ It is a DML query to insert data into the fact_video_trend table.
 * `load_fact_video_trend_query.sql` file:
 
 ```
-INSERT INTO dim_videos
-(yt_video_id, category_id, channel_id, date_id, video_title, publish_time,
-ratings_disabled, cmt_disabled, video_error_or_removed)
+INSERT INTO fact_video_trend (video_id, country_id, date_id, views, likes, dislike, cmt_count,
+							 diff_publish_trend, before_after_flag)
 SELECT 
-v.client_video_id, 
-dc.category_id,
-dch.channel_id,
+dv.video_id,
+dc.country_id,
 dd.date_id,
-v.title,
-v.publish_time,
-v.ratings_disabled,
-v.comments_disabled,
-v.video_error_or_removed
-FROM videos v 
-JOIN dim_category dc ON v.category_id = dc.yt_category_id
-JOIN dim_channel dch ON v.channel_title = dch.channel_name
-JOIN dim_publish_date dd ON v.publish_time::date = dd.full_date
-WHERE v.video_id IN
-(SELECT MAX(video_id) 
-FROM videos 
-GROUP BY client_video_id)
+v."views",
+v.likes,
+v.dislikes,
+v.comment_count,
+v.diff_publish_trend,
+CASE WHEN dv.effective_date <= v.trending_date THEN 1
+     WHEN dv.effective_date > v.trending_date THEN 0
+     ELSE null
+     END AS before_after_flag
+FROM videos v
+JOIN dim_country dc ON v.country = dc.country_name 
+JOIN dim_videos dv ON dv.yt_video_id = v.client_video_id 
+JOIN dim_trending_date dd ON dd.trending_date = v.trending_date 
 ```

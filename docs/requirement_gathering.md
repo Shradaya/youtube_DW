@@ -72,7 +72,7 @@ The attributes identified for the fact and dimension tables are:
 </tr>
 <tr>
 <th>`fact_video_trend` </th>
-<td>video_trend_id, video_id, country_id, date_id, trending_date, views, likes, dislikes, <br> cmt_count, ratio_like_dislike, diff_publish_trend</td>
+<td>video_trend_id, video_id, country_id, date_id, views, likes, dislikes, <br> cmt_count, ratio_like_dislike, diff_publish_trend, before_after_flag</td>
 </tr>
 </table>
 

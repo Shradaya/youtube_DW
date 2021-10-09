@@ -1,10 +1,9 @@
-INSERT INTO fact_video_trend (video_id, country_id, date_id, trending_date, views, likes, dislike, cmt_count,
+INSERT INTO fact_video_trend (video_id, country_id, date_id, views, likes, dislike, cmt_count,
 							 diff_publish_trend, before_after_flag)
 SELECT 
 dv.video_id,
 dc.country_id,
 dd.date_id,
-v.trending_date,
 v."views",
 v.likes,
 v.dislikes,
